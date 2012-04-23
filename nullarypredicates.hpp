@@ -1,25 +1,34 @@
 #ifndef __NULLARYPREDICATES_HPP_2012_04_23__
 #define __NULLARYPREDICATES_HPP_2012_04_23__
 
+#include "constexpr.hpp"
+#include "noexcept.hpp"
+
 namespace assert {
+    struct true_predicate {
+        CONSTEXPR bool operator ()() throw() {
+            return true;
+        }
+    };
+
     template <class Pred>
     class negate {
         const Pred pred;
 
     public:
-        negate(Pred pred) throw()
+        negate(Pred pred) NOEXCEPT(Pred(pred))
             : pred(pred)
         {
         }
 
-        bool operator ()() const throw()
+        bool operator ()() const NOEXCEPT(pred())
         {
             return !pred();
         }
     };
 
     template <class Pred>
-    static negate<Pred> make_negate(Pred pred) throw() {
+    static negate<Pred> make_negate(Pred pred) NOEXCEPT(negate<Pred>(pred)) {
         return negate<Pred>(pred);
     }
 
@@ -29,20 +38,22 @@ namespace assert {
         const Arg arg;
 
     public:
-        bind(Pred pred, Arg arg) throw()
+        bind(Pred pred, Arg arg) NOEXCEPT2(Pred(pred), Arg(arg))
             : pred(pred)
             , arg(arg)
         {
         }
 
-        bool operator ()() const throw()
+        bool operator ()() const NOEXCEPT(pred(arg))
         {
             return pred(arg);
         }
     };
 
     template <class Pred, class Arg>
-    static bind<Pred, Arg> make_bind(Pred pred, Arg arg) throw() {
+    static bind<Pred, Arg> make_bind(Pred pred, Arg arg)
+        NOEXCEPT((bind<Pred, Arg>(pred, arg)))
+    {
         return bind<Pred, Arg>(pred, arg);
     }
 
@@ -52,13 +63,13 @@ namespace assert {
         const Arg arg;
 
     public:
-        bind_predicate(Pred pred, Arg arg) throw()
+        bind_predicate(Pred pred, Arg arg) NOEXCEPT2(Pred(pred), Arg(arg))
             : pred(pred)
             , arg(arg)
         {
         }
 
-        bool operator ()() const throw()
+        bool operator ()() const NOEXCEPT(pred(arg()))
         {
             return pred(arg());
         }
@@ -66,7 +77,7 @@ namespace assert {
 
     template <class Pred, class Arg>
     static bind_predicate<Pred, Arg> make_bind_predicate(Pred pred,
-        Arg arg) throw()
+        Arg arg) NOEXCEPT((bind_predicate<Pred, Arg>(pred, arg)))
     {
         return bind_predicate<Pred, Arg>(pred, arg);
     }
@@ -77,13 +88,13 @@ namespace assert {
         const Pred pred;
 
     public:
-        bind_member(const Class* pthis, Pred pred) throw()
+        bind_member(const Class* pthis, Pred pred) NOEXCEPT(Pred(pred))
             : pthis(pthis)
             , pred(pred)
         {
         }
 
-        bool operator ()() const throw()
+        bool operator ()() const NOEXCEPT((pthis->*pred)())
         {
             return (pthis->*pred)();
         }
@@ -91,7 +102,7 @@ namespace assert {
 
     template <class Class, class Pred>
     static bind_member<Class, Pred> make_bind_member(const Class* pthis,
-        Pred pred) throw()
+        Pred pred) NOEXCEPT((bind_member<Class, Pred>(pthis, pred)))
     {
         return bind_member<Class, Pred>(pthis, pred);
     }

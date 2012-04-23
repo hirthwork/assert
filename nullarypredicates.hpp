@@ -37,13 +37,38 @@ namespace assert {
 
         bool operator ()() const throw()
         {
-            return pred(arg());
+            return pred(arg);
         }
     };
 
     template <class Pred, class Arg>
     static bind<Pred, Arg> make_bind(Pred pred, Arg arg) throw() {
         return bind<Pred, Arg>(pred, arg);
+    }
+
+    template <class Pred, class Arg>
+    class bind_predicate {
+        const Pred pred;
+        const Arg arg;
+
+    public:
+        bind_predicate(Pred pred, Arg arg) throw()
+            : pred(pred)
+            , arg(arg)
+        {
+        }
+
+        bool operator ()() const throw()
+        {
+            return pred(arg());
+        }
+    };
+
+    template <class Pred, class Arg>
+    static bind_predicate<Pred, Arg> make_bind_predicate(Pred pred,
+        Arg arg) throw()
+    {
+        return bind_predicate<Pred, Arg>(pred, arg);
     }
 
     template <class Class, class Pred>

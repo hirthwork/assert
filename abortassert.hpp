@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include "baseassert.hpp"
+#include "noexcept.hpp"
 
 namespace assert {
     struct abort_assert: base_assert<abort_assert> {

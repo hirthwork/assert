@@ -1,6 +1,8 @@
 #ifndef __BASEASSERT_HPP_2012_04_23__
 #define __BASEASSERT_HPP_2012_04_23__
 
+#include "noexcept.hpp"
+
 namespace assert {
     template <class Derived>
     struct base_assert {

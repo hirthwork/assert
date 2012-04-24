@@ -32,6 +32,26 @@ namespace assert {
         return negate<Pred>(pred);
     }
 
+    template <class Arg>
+    class identity {
+        const Arg arg;
+
+    public:
+        identity(Arg arg) NOEXCEPT(Arg(arg))
+            : Arg(arg)
+        {
+        }
+
+        Arg operator ()() NOEXCEPT(Arg(arg)) {
+            return arg;
+        }
+    };
+
+    template <class Arg>
+    static identity<Arg> make_identity(Arg arg) NOEXCEPT(Arg(arg)) {
+        return identity<Arg>(arg);
+    }
+
     template <class Pred, class Arg>
     class bind {
         const Pred pred;

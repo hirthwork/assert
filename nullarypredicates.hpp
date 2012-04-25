@@ -1,11 +1,13 @@
 #ifndef __NULLARYPREDICATES_HPP_2012_04_23__
 #define __NULLARYPREDICATES_HPP_2012_04_23__
 
+#include <reinvented-wheels/enableif.hpp>
+
 #include "constexpr.hpp"
 #include "noexcept.hpp"
 
 namespace assert {
-    struct true_predicate {
+    struct truth {
         typedef bool result_type;
 
         CONSTEXPR result_type operator ()() throw() {
@@ -14,13 +16,13 @@ namespace assert {
     };
 
     template <class Pred>
-    class negate {
+    class negator {
         const Pred pred;
 
     public:
         typedef bool result_type;
 
-        negate(Pred pred) NOEXCEPT(Pred(pred))
+        negator(Pred pred) NOEXCEPT(Pred(pred))
             : pred(pred)
         {
         }
@@ -32,8 +34,8 @@ namespace assert {
     };
 
     template <class Pred>
-    static negate<Pred> make_negate(Pred pred) NOEXCEPT(negate<Pred>(pred)) {
-        return negate<Pred>(pred);
+    static negator<Pred> negate(Pred pred) NOEXCEPT(negator<Pred>(pred)) {
+        return negator<Pred>(pred);
     }
 
     template <class Arg>
@@ -52,11 +54,6 @@ namespace assert {
             return arg;
         }
     };
-
-    template <class Arg>
-    static identity<Arg> make_identity(Arg arg) NOEXCEPT(Arg(arg)) {
-        return identity<Arg>(arg);
-    }
 
     template <class Pred, class Arg>
     class predicate_binder {
@@ -77,13 +74,6 @@ namespace assert {
             return pred(arg());
         }
     };
-
-    template <class Pred, class Arg>
-    static predicate_binder<Pred, Arg> bind(Pred pred, Arg arg)
-        NOEXCEPT((predicate_binder<Pred, Arg>(pred, arg)))
-    {
-        return predicate_binder<Pred, Arg>(pred, arg);
-    }
 
     template <class Class, class Pred>
     class member_binder;
@@ -109,11 +99,33 @@ namespace assert {
         }
     };
 
+    template <class>
+    struct is_predicate {
+        static const bool value = false;
+    };
+
     template <class Class, class Result>
-    static member_binder<Class, Result (Class::*)() const> bind_member(
-        const Class* pthis, Result (Class::*pred)() const) throw()
+    struct is_predicate<Result (Class::*)() const> {
+        static const bool value = true;
+    };
+
+    template <class Arg>
+    static identity<Arg> bind(Arg arg) NOEXCEPT(Arg(arg)) {
+        return identity<Arg>(arg);
+    }
+
+    template <class Pred, class Arg>
+    static typename NReinventedWheels::TEnableIf<!is_predicate<Arg>::value, predicate_binder<Pred, Arg> >::TType_ bind(Pred pred, Arg arg)
+        NOEXCEPT((predicate_binder<Pred, Arg>(pred, arg)))
     {
-        return member_binder<Class, Result (Class::*)() const>(pthis, pred);
+        return predicate_binder<Pred, Arg>(pred, arg);
+    }
+
+    template <class Class, class Pred>
+    static typename NReinventedWheels::TEnableIf<is_predicate<Pred>::value, member_binder<Class, Pred> >::TType_ bind(
+        const Class* pthis, Pred pred) throw()
+    {
+        return member_binder<Class, Pred>(pthis, pred);
     }
 }
 

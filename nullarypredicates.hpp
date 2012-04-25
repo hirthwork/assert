@@ -6,7 +6,9 @@
 
 namespace assert {
     struct true_predicate {
-        CONSTEXPR bool operator ()() throw() {
+        typedef bool result_type;
+
+        CONSTEXPR result_type operator ()() throw() {
             return true;
         }
     };
@@ -16,12 +18,14 @@ namespace assert {
         const Pred pred;
 
     public:
+        typedef bool result_type;
+
         negate(Pred pred) NOEXCEPT(Pred(pred))
             : pred(pred)
         {
         }
 
-        bool operator ()() const NOEXCEPT(pred())
+        result_type operator ()() const NOEXCEPT(pred())
         {
             return !pred();
         }
@@ -37,12 +41,14 @@ namespace assert {
         const Arg arg;
 
     public:
+        typedef Arg result_type;
+
         identity(Arg arg) NOEXCEPT(Arg(arg))
-            : Arg(arg)
+            : arg(arg)
         {
         }
 
-        Arg operator ()() NOEXCEPT(Arg(arg)) {
+        result_type operator ()() const NOEXCEPT(Arg(arg)) {
             return arg;
         }
     };
@@ -53,78 +59,61 @@ namespace assert {
     }
 
     template <class Pred, class Arg>
-    class bind {
+    class predicate_binder {
         const Pred pred;
         const Arg arg;
 
     public:
-        bind(Pred pred, Arg arg) NOEXCEPT2(Pred(pred), Arg(arg))
+        typedef typename Pred::result_type result_type;
+
+        predicate_binder(Pred pred, Arg arg) NOEXCEPT2(Pred(pred), Arg(arg))
             : pred(pred)
             , arg(arg)
         {
         }
 
-        bool operator ()() const NOEXCEPT(pred(arg))
-        {
-            return pred(arg);
-        }
-    };
-
-    template <class Pred, class Arg>
-    static bind<Pred, Arg> make_bind(Pred pred, Arg arg)
-        NOEXCEPT((bind<Pred, Arg>(pred, arg)))
-    {
-        return bind<Pred, Arg>(pred, arg);
-    }
-
-    template <class Pred, class Arg>
-    class bind_predicate {
-        const Pred pred;
-        const Arg arg;
-
-    public:
-        bind_predicate(Pred pred, Arg arg) NOEXCEPT2(Pred(pred), Arg(arg))
-            : pred(pred)
-            , arg(arg)
-        {
-        }
-
-        bool operator ()() const NOEXCEPT(pred(arg()))
+        result_type operator ()() const NOEXCEPT(pred(arg()))
         {
             return pred(arg());
         }
     };
 
     template <class Pred, class Arg>
-    static bind_predicate<Pred, Arg> make_bind_predicate(Pred pred,
-        Arg arg) NOEXCEPT((bind_predicate<Pred, Arg>(pred, arg)))
+    static predicate_binder<Pred, Arg> bind(Pred pred, Arg arg)
+        NOEXCEPT((predicate_binder<Pred, Arg>(pred, arg)))
     {
-        return bind_predicate<Pred, Arg>(pred, arg);
+        return predicate_binder<Pred, Arg>(pred, arg);
     }
 
     template <class Class, class Pred>
-    class bind_member {
+    class member_binder;
+
+    template <class Class, class Result>
+    class member_binder<Class, Result (Class::*)() const> {
         const Class* const pthis;
+        typedef Result (Class::*Pred)() const;
         const Pred pred;
 
     public:
-        bind_member(const Class* pthis, Pred pred) NOEXCEPT(Pred(pred))
+        typedef Result result_type;
+
+        member_binder(const Class* pthis, Pred pred) throw()
             : pthis(pthis)
             , pred(pred)
         {
         }
 
-        bool operator ()() const NOEXCEPT((pthis->*pred)())
+        result_type operator ()() const NOEXCEPT((pthis->*pred)())
         {
             return (pthis->*pred)();
         }
     };
 
-    template <class Class, class Pred>
-    static bind_member<Class, Pred> make_bind_member(const Class* pthis,
-        Pred pred) NOEXCEPT((bind_member<Class, Pred>(pthis, pred)))
+    template <class Class, class Result>
+    static member_binder<Class, Result (Class::*)() const> bind_member(
+        const Class* pthis, Result (Class::*pred)() const) throw()
     {
-        return bind_member<Class, Pred>(pthis, pred);
+        return member_binder<Class, Result (Class::*)() const>(pthis, pred);
     }
 }
 

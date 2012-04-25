@@ -3,10 +3,8 @@
 
 #include <stdexcept>
 
-#include "baseassert.hpp"
-
 namespace assert {
-    struct stdexcept_assert: base_assert<stdexcept_assert> {
+    struct stdexcept_assert {
         template <class Pred, class Message>
         static void out_of_range_assert(Pred pred, Message message) {
             if (!pred()) {

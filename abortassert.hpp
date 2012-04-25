@@ -3,16 +3,22 @@
 
 #include <cstdlib>
 
-#include "baseassert.hpp"
 #include "noexcept.hpp"
 
 namespace assert {
-    struct abort_assert: base_assert<abort_assert> {
+    struct abort_assert {
         template <class Pred, class Message>
         static void assert(Pred pred, Message) NOEXCEPT(pred()) {
             if (!pred()) {
                 abort();
             }
+        }
+
+        template <class Pred, class Message>
+        static void out_of_range_assert(Pred pred, Message message)
+            NOEXCEPT(assert(pred, message))
+        {
+            assert(pred, message);
         }
     };
 }

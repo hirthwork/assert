@@ -1,13 +1,14 @@
 #ifndef __EMPTYASSERT_HPP_2012_04_23__
 #define __EMPTYASSERT_HPP_2012_04_23__
 
-#include "baseassert.hpp"
-#include "constexpr.hpp"
-
 namespace assert {
-    struct empty_assert: base_assert<empty_assert> {
+    struct empty_assert {
         template <class Pred, class Message>
-        CONSTEXPR static void assert(Pred, Message) throw() {
+        static void assert(Pred, Message) throw() {
+        }
+
+        template <class Pred, class Message>
+        static void out_of_range_assert(Pred, Message) throw() {
         }
     };
 }

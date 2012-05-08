@@ -94,11 +94,11 @@ namespace assert {
         }
     };
 
-    template <class Class, class Pred>
+    template <class Pred>
     class member_binder;
 
     template <class Class, class Result>
-    class member_binder<Class, Result (Class::*)() const> {
+    class member_binder<Result (Class::*)() const> {
         const Class* const pthis;
         typedef Result (Class::*Pred)() const;
         const Pred pred;
@@ -143,10 +143,9 @@ namespace assert {
 
     template <class Class, class Pred>
     static typename reinvented_wheels::enable_if<is_predicate<Pred>::value,
-        member_binder<Class, Pred> >::type bind(const Class* pthis,
-            Pred pred) throw()
+        member_binder<Pred> >::type bind(const Class* pthis, Pred pred) throw()
     {
-        return member_binder<Class, Pred>(pthis, pred);
+        return member_binder<Pred>(pthis, pred);
     }
 }
 

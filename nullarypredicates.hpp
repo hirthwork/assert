@@ -134,16 +134,16 @@ namespace assert {
     }
 
     template <class Pred, class Arg>
-    static typename NReinventedWheels::TEnableIf<!is_predicate<Arg>::value,
-        predicate_binder<Pred, Arg> >::TType_ bind(Pred pred, Arg arg)
+    static typename reinvented_wheels::enable_if<!is_predicate<Arg>::value,
+        predicate_binder<Pred, Arg> >::type bind(Pred pred, Arg arg)
         NOEXCEPT((predicate_binder<Pred, Arg>(pred, arg)))
     {
         return predicate_binder<Pred, Arg>(pred, arg);
     }
 
     template <class Class, class Pred>
-    static typename NReinventedWheels::TEnableIf<is_predicate<Pred>::value,
-        member_binder<Class, Pred> >::TType_ bind(const Class* pthis,
+    static typename reinvented_wheels::enable_if<is_predicate<Pred>::value,
+        member_binder<Class, Pred> >::type bind(const Class* pthis,
             Pred pred) throw()
     {
         return member_binder<Class, Pred>(pthis, pred);

@@ -28,7 +28,7 @@
 #include "noexcept.hpp"
 
 namespace assert {
-    template <class T, T Value>
+    template <class T, T Value = T()>
     struct const_value {
         typedef T result_type;
 

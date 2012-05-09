@@ -20,8 +20,6 @@
 #ifndef __NULLARYPREDICATES_HPP_2012_04_23__
 #define __NULLARYPREDICATES_HPP_2012_04_23__
 
-#include <limits>
-
 #include <reinvented-wheels/enableif.hpp>
 
 #include "constexpr.hpp"

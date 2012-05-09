@@ -37,44 +37,49 @@ namespace assert {
         }
     };
 
-    template <class Pred>
-    class abser {
+    template <class Result, class Pred, class Arg1, class Arg2>
+    class selector {
         const Pred pred;
+        const Arg1 arg1;
+        const Arg2 arg2;
 
     public:
-        typedef typename Pred::result_type result_type;
+        typedef Result result_type;
 
-        abser(Pred pred) NOEXCEPT(Pred(pred))
+        selector(Pred pred, Arg1 arg1, Arg2 arg2)
+            NOEXCEPT((Pred(pred), Arg1(arg1), Arg2(arg2)))
             : pred(pred)
+            , arg1(arg1)
+            , arg2(arg2)
         {
         }
 
         result_type operator ()() const
-            NOEXCEPT((-pred(), result_type(pred()) < 0))
+            NOEXCEPT((bool(pred()),result_type(arg1()), result_type(arg2())))
         {
-            result_type result(pred());
-            if (result < 0) {
-                return -result;
+            if (pred()) {
+                return arg1();
             } else {
-                return result;
+                return arg2();
             }
         }
     };
 
-    template <class Pred>
-    static typename reinvented_wheels::enable_if<
-        std::numeric_limits<typename Pred::result_type>::is_signed,
-        abser<Pred> >::type abs(Pred pred) NOEXCEPT(abser<Pred>(pred))
+    template <class Result, class Pred, class Arg1, class Arg2>
+    selector<Result, Pred, Arg1, Arg2> select(Pred pred, Arg1 arg1, Arg2 arg2)
+        NOEXCEPT((selector<Result, Pred, Arg1, Arg2>(pred, arg1, arg2)))
     {
-        return abser<Pred>(pred);
+        return selector<Result, Pred, Arg1, Arg2>(pred, arg1, arg2);
     }
 
-    template <class Pred>
-    static typename reinvented_wheels::enable_if<
-        !std::numeric_limits<typename Pred::result_type>::is_signed,
-        Pred >::type abs(Pred pred) NOEXCEPT(Pred(pred))
+    template <class Pred, class Arg1, class Arg2>
+    selector<typename Arg1::result_type, Pred, Arg1, Arg2>
+        select(Pred pred, Arg1 arg1, Arg2 arg2)
+        NOEXCEPT((selector<typename Arg1::result_type, Pred, Arg1, Arg2>(pred,
+            arg1, arg2)))
     {
-        return pred;
+        return selector<typename Arg1::result_type, Pred, Arg1, Arg2>(pred,
+            arg1, arg2);
     }
 
     template <class Arg>

@@ -1,5 +1,5 @@
 /*
- * stdexcept.hpp            -- <stdexcept> assert class
+ * abortassert.hpp          -- abort assert class
  *
  * Copyright (C) 2012 Dmitry Potapov <potapov.d@gmail.com>
  *
@@ -17,25 +17,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __STDEXCEPTASSERT_HPP_2012_04_23__
-#define __STDEXCEPTASSERT_HPP_2012_04_23__
+#ifndef __ABORTASSERT_HPP_2012_04_23__
+#define __ABORTASSERT_HPP_2012_04_23__
 
-#include <stdexcept>
+#include <cstdlib>
+
+#include "noexcept.hpp"
 
 namespace assert {
-    struct stdexcept_assert {
+    struct abort {
         template <class Pred, class Message>
-        static void out_of_range_assert(Pred pred, Message message) {
+        static void assert(Pred pred, Message) NOEXCEPT(pred()) {
             if (!pred()) {
-                throw std::out_of_range(message);
+                abort();
             }
         }
 
         template <class Pred, class Message>
-        static void assert(Pred pred, Message message) {
-            if (!pred()) {
-                throw std::logic_error(message);
-            }
+        static void out_of_range_assert(Pred pred, Message message)
+            NOEXCEPT(assert(pred, message))
+        {
+            assert(pred, message);
         }
     };
 }

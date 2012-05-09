@@ -1,5 +1,5 @@
 /*
- * emptyassert.hpp          -- empty assert class
+ * stdexcept.hpp            -- <stdexcept> assert class
  *
  * Copyright (C) 2012 Dmitry Potapov <potapov.d@gmail.com>
  *
@@ -17,17 +17,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __EMPTYASSERT_HPP_2012_04_23__
-#define __EMPTYASSERT_HPP_2012_04_23__
+#ifndef __STDEXCEPTASSERT_HPP_2012_04_23__
+#define __STDEXCEPTASSERT_HPP_2012_04_23__
+
+#include <stdexcept>
 
 namespace assert {
-    struct empty_assert {
+    struct stdexcept {
         template <class Pred, class Message>
-        static void assert(Pred, Message) throw() {
+        static void assert(Pred pred, Message message) {
+            if (!pred()) {
+                throw std::logic_error(message);
+            }
         }
 
         template <class Pred, class Message>
-        static void out_of_range_assert(Pred, Message) throw() {
+        static void out_of_range_assert(Pred pred, Message message) {
+            if (!pred()) {
+                throw std::out_of_range(message);
+            }
         }
     };
 }

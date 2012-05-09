@@ -1,5 +1,5 @@
 /*
- * abortassert.hpp          -- abort assert class
+ * emptyassert.hpp          -- empty assert class
  *
  * Copyright (C) 2012 Dmitry Potapov <potapov.d@gmail.com>
  *
@@ -17,27 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ABORTASSERT_HPP_2012_04_23__
-#define __ABORTASSERT_HPP_2012_04_23__
+#ifndef __EMPTYASSERT_HPP_2012_04_23__
+#define __EMPTYASSERT_HPP_2012_04_23__
 
-#include <cstdlib>
-
-#include "noexcept.hpp"
+#include "constexpr.hpp"
 
 namespace assert {
-    struct abort_assert {
+    struct empty {
         template <class Pred, class Message>
-        static void assert(Pred pred, Message) NOEXCEPT(pred()) {
-            if (!pred()) {
-                abort();
-            }
+        CONSTEXPR static void assert(Pred, Message) throw() {
         }
 
         template <class Pred, class Message>
-        static void out_of_range_assert(Pred pred, Message message)
-            NOEXCEPT(assert(pred, message))
-        {
-            assert(pred, message);
+        CONSTEXPR static void out_of_range_assert(Pred, Message) throw() {
         }
     };
 }

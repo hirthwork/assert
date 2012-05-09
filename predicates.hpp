@@ -20,41 +20,61 @@
 #ifndef __NULLARYPREDICATES_HPP_2012_04_23__
 #define __NULLARYPREDICATES_HPP_2012_04_23__
 
+#include <limits>
+
 #include <reinvented-wheels/enableif.hpp>
 
 #include "constexpr.hpp"
 #include "noexcept.hpp"
 
 namespace assert {
-    struct truth {
-        typedef bool result_type;
+    template <class T, T Value>
+    struct const_value {
+        typedef T result_type;
 
         CONSTEXPR result_type operator ()() throw() {
-            return true;
+            return Value;
         }
     };
 
     template <class Pred>
-    class negator {
+    class abser {
         const Pred pred;
 
     public:
-        typedef bool result_type;
+        typedef typename Pred::result_type result_type;
 
-        negator(Pred pred) NOEXCEPT(Pred(pred))
+        abser(Pred pred) NOEXCEPT(Pred(pred))
             : pred(pred)
         {
         }
 
-        result_type operator ()() const NOEXCEPT(pred())
+        result_type operator ()() const
+            NOEXCEPT((-pred(), result_type(pred()) < 0))
         {
-            return !pred();
+            result_type result(pred());
+            if (result < 0) {
+                return -result;
+            } else {
+                return result;
+            }
         }
     };
 
     template <class Pred>
-    static negator<Pred> negate(Pred pred) NOEXCEPT(negator<Pred>(pred)) {
-        return negator<Pred>(pred);
+    static typename reinvented_wheels::enable_if<
+        std::numeric_limits<typename Pred::result_type>::is_signed,
+        abser<Pred> >::type abs(Pred pred) NOEXCEPT(abser<Pred>(pred))
+    {
+        return abser<Pred>(pred);
+    }
+
+    template <class Pred>
+    static typename reinvented_wheels::enable_if<
+        !std::numeric_limits<typename Pred::result_type>::is_signed,
+        Pred >::type abs(Pred pred) NOEXCEPT(Pred(pred))
+    {
+        return pred;
     }
 
     template <class Arg>
@@ -82,7 +102,7 @@ namespace assert {
     public:
         typedef typename Pred::result_type result_type;
 
-        predicate_binder(Pred pred, Arg arg) NOEXCEPT2(Pred(pred), Arg(arg))
+        predicate_binder(Pred pred, Arg arg) NOEXCEPT((Pred(pred), Arg(arg)))
             : pred(pred)
             , arg(arg)
         {
@@ -91,6 +111,29 @@ namespace assert {
         result_type operator ()() const NOEXCEPT(pred(arg()))
         {
             return pred(arg());
+        }
+    };
+
+    template <class Pred, class Arg1, class Arg2>
+    class binary_predicate_binder {
+        const Pred pred;
+        const Arg1 arg1;
+        const Arg2 arg2;
+
+    public:
+        typedef typename Pred::result_type result_type;
+
+        binary_predicate_binder(Pred pred, Arg1 arg1, Arg2 arg2)
+            NOEXCEPT((Pred(pred), Arg1(arg1), Arg2(arg2)))
+            : pred(pred)
+            , arg1(arg1)
+            , arg2(arg2)
+        {
+        }
+
+        result_type operator ()() const NOEXCEPT(pred(arg1(), arg2()))
+        {
+            return pred(arg1(), arg2());
         }
     };
 
@@ -141,9 +184,18 @@ namespace assert {
         return predicate_binder<Pred, Arg>(pred, arg);
     }
 
+    template <class Pred, class Arg1, class Arg2>
+    static binary_predicate_binder<Pred, Arg1, Arg2>
+        bind(Pred pred, Arg1 arg1, Arg2 arg2)
+        NOEXCEPT((binary_predicate_binder<Pred, Arg1, Arg2>(pred, arg1, arg2)))
+    {
+        return binary_predicate_binder<Pred, Arg1, Arg2>(pred, arg1, arg2);
+    }
+
     template <class Class, class Pred>
     static typename reinvented_wheels::enable_if<is_predicate<Pred>::value,
-        member_binder<Pred> >::type bind(const Class* pthis, Pred pred) throw()
+        member_binder<Pred> >::type bind(const Class* pthis, Pred pred)
+        NOEXCEPT((member_binder<Pred>(pthis, pred)))
     {
         return member_binder<Pred>(pthis, pred);
     }

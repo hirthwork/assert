@@ -34,7 +34,12 @@ namespace assert {
         }
 
         template <class Pred, class Message>
-        static void out_of_range_assert(Pred pred, Message message)
+        static void bad_cast(Pred pred, Message message) NOEXCEPT(pred()) {
+            assert(pred, message);
+        }
+
+        template <class Pred, class Message>
+        static void out_of_range(Pred pred, Message message)
             NOEXCEPT(assert(pred, message))
         {
             assert(pred, message);

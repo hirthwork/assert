@@ -29,7 +29,11 @@ namespace assert {
         }
 
         template <class Pred, class Message>
-        CONSTEXPR static void out_of_range_assert(Pred, Message) throw() {
+        CONSTEXPR static void bad_cast(Pred, Message) throw() {
+        }
+
+        template <class Pred, class Message>
+        CONSTEXPR static void out_of_range(Pred, Message) throw() {
         }
     };
 }

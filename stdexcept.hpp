@@ -21,6 +21,7 @@
 #define __STDEXCEPTASSERT_HPP_2012_04_23__
 
 #include <stdexcept>
+#include <typeinfo>
 
 namespace assert {
     struct stdexcept {
@@ -32,7 +33,14 @@ namespace assert {
         }
 
         template <class Pred, class Message>
-        static void out_of_range_assert(Pred pred, Message message) {
+        static void bad_cast(Pred pred, Message message) {
+            if (!pred()) {
+                throw std::bad_cast(message);
+            }
+        }
+
+        template <class Pred, class Message>
+        static void out_of_range(Pred pred, Message message) {
             if (!pred()) {
                 throw std::out_of_range(message);
             }

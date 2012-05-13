@@ -30,7 +30,7 @@ namespace assert {
     struct const_value {
         typedef T result_type;
 
-        CONSTEXPR result_type operator ()() throw() {
+        CONSTEXPR result_type operator ()() const throw() {
             return Value;
         }
     };
